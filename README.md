@@ -28,5 +28,3 @@ https://data.worldbank.org/indicator/AG.YLD.CREL.KG?locations=TR
 - [ ] Lighthouse mobil Performans ve Erişilebilirlik raporlarını alın ve `reports/` klasörüne PNG olarak ekleyin.
 - [ ] GitHub deposunu herkese açık yapın ve canlı siteyi HTTPS ile yayımlayın.
 - [ ] Portfolyo bağlantısının çalıştığını kontrol edin.
-- [ ] `teslim.txt` içindeki URL yer tutucularını gerçek bağlantılarla değiştirin.
-- [ ] Öğrenci numarasını dosya adında kullanın.
