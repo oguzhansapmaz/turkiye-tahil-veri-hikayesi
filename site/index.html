@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Türkiye'de tahıl veriminin 1995–2024 arasındaki değişimini anlatan etkileşimli veri hikâyesi.">
+<title>Toprağın Hafızası | Türkiye'de Tahıl Verimi</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+:root{--bg:#0b100c;--panel:rgba(11,20,13,.87);--text:#f4f2e9;--muted:#c7cbbf;--accent:#d6f34e;--line:rgba(221,231,203,.18)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:80px}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI",Arial,sans-serif;line-height:1.65;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;z-index:-2;background:linear-gradient(90deg,rgba(5,10,7,.45),rgba(5,10,7,.08) 70%),linear-gradient(0deg,rgba(5,10,7,.42),transparent 45%,rgba(5,10,7,.18)),url("assets/ataturk-tarim-arka-plan.png") center/cover no-repeat;transform:scale(1.01)}
+body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:rgba(5,10,7,.10)}
+a{color:inherit}.topbar{position:sticky;top:0;z-index:20;min-height:72px;padding:0 clamp(20px,5vw,84px);display:flex;align-items:center;justify-content:space-between;gap:24px;border-bottom:1px solid rgba(255,255,255,.16);background:rgba(7,13,9,.62);backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-size:13px;font-weight:800;letter-spacing:.09em;line-height:1.35;white-space:nowrap}.brand-mark{color:var(--accent);font-size:29px}.navlinks{display:flex;gap:clamp(14px,2.5vw,38px);align-items:center}.navlinks a,.nav-cta{font-size:13px;text-decoration:none}.navlinks a{color:#f3f1e8}.navlinks a:hover,.navlinks a.active,.nav-cta{color:var(--accent)}
+.hero{min-height:calc(100svh - 72px);padding:clamp(68px,9vh,120px) clamp(24px,8vw,140px) 80px;display:flex;align-items:center;position:relative}
+.hero-copy{max-width:710px;position:relative;z-index:1}.eyebrow{margin:0 0 22px;color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.24em;text-transform:uppercase}
+h1{margin:0;max-width:760px;font-size:clamp(42px,5.2vw,76px);letter-spacing:-.045em;line-height:1.08;text-wrap:balance;text-shadow:0 3px 24px rgba(0,0,0,.5)}h1 span{color:var(--accent)}
+.hero-rule{width:58px;height:4px;margin:26px 0 20px;background:var(--accent);border-radius:99px}.hero-description{max-width:540px;color:#e1e2d8;font-size:clamp(15px,1.2vw,18px);text-shadow:0 2px 14px #000}.byline{margin-top:24px;color:#d8d9ce;font-size:14px}
+.scroll-cue{display:inline-flex;align-items:center;gap:13px;margin-top:38px;color:#f2f1e8;text-decoration:none;font-size:13px}.mouse{width:20px;height:32px;border:1.5px solid #f2f1e8;border-radius:14px;display:inline-flex;justify-content:center;padding-top:5px;color:var(--accent)}
+.quote{position:absolute;top:8%;right:clamp(30px,9vw,150px);max-width:470px;text-align:center;color:rgba(250,246,235,.92);text-shadow:0 3px 16px #000;pointer-events:none}.quote blockquote{margin:0;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:clamp(20px,2.5vw,36px);line-height:1.35}.signature{margin:4px 0 0;font-family:"Brush Script MT","Segoe Script",cursive;font-size:clamp(24px,3vw,42px);font-style:italic;transform:rotate(-7deg)}
+.section-intro{max-width:850px;margin:auto;padding:95px 24px 25px;text-align:center}.section-intro h2{font-size:clamp(30px,4vw,52px);line-height:1.15;margin:0 0 18px}.section-intro p{color:var(--muted);margin:0 auto;max-width:650px}
+.scrolly{max-width:1500px;margin:auto;padding:20px clamp(20px,5vw,76px) 90px;display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:clamp(28px,5vw,78px);align-items:start}.chapters{min-width:0}.story{min-height:78vh;padding:70px 0;display:flex;flex-direction:column;justify-content:center;opacity:.55;transition:opacity .35s}.story.active{opacity:1}.step-no{color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.17em}.story h2{margin:18px 0;font-size:clamp(30px,3.2vw,48px);line-height:1.16;letter-spacing:-.035em}.story p{max-width:510px;color:#e0e2d8;font-size:16px}.insight{display:inline-block;width:fit-content;margin-top:16px;padding:12px 16px;border-left:3px solid var(--accent);background:rgba(8,14,9,.68);border-radius:0 8px 8px 0;font-size:14px}
+.visual{position:sticky;top:96px;min-height:470px;margin-top:70px;padding:clamp(20px,2.3vw,34px);border:1px solid rgba(220,238,187,.24);border-radius:22px;background: rgba(11, 20, 13, 0.72);backdrop-filter:blur(18px);box-shadow:0 22px 80px rgba(0,0,0,.3);display:flex;flex-direction:column;justify-content:center}.visual h3{margin:0;font-size:19px}.note{margin:5px 0 12px;color:#c1c9bb;font-size:12px}.chart-wrap{height:360px;position:relative}#chartStatus{margin:14px 0 0;color:#c1c9bb;font-size:12px}
+.explore{max-width:1000px;margin:50px auto 110px;padding:clamp(24px,4vw,48px);border:1px solid rgba(220,238,187,.24);border-radius:22px;background:rgba(10,18,12,.91);backdrop-filter:blur(16px);box-shadow:0 20px 60px rgba(0,0,0,.25)}.explore h2{margin:0 0 12px;font-size:clamp(28px,3vw,42px)}.explore p{color:var(--muted)}.controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:20px 0}select,button{min-height:44px;padding:10px 14px;border-radius:9px;border:1px solid rgba(220,238,187,.3);font:inherit}select{color:var(--text);background:#111c13}button{color:#10160b;background:var(--accent);font-weight:800;cursor:pointer}button:disabled,select:disabled{opacity:.6;cursor:not-allowed}#yearResult{color:var(--accent);font-size:23px}
+footer{padding:48px clamp(24px,8vw,120px);background:rgba(5,10,7,.88);border-top:1px solid var(--line);color:#c5cbbf}footer h2{color:var(--text);font-size:25px}footer p{max-width:850px}footer a{color:var(--accent)}.backtop{display:inline-block;margin-top:12px;text-decoration:none}
+@media(max-width:900px){.navlinks{display:none}.hero{min-height:86svh;padding-top:180px}.quote{top:28px;left:24px;right:24px;max-width:none;text-align:right}.quote blockquote{font-size:21px}.quote .signature{font-size:27px}.scrolly{display:flex;flex-direction:column}.visual{order:-1;position:sticky;top:72px;z-index:5;width:100%;min-height:370px;margin-top:18px}.chart-wrap{height:260px}.story{min-height:60vh;padding:65px 0}}
+@media(max-width:520px){.brand{font-size:11px}.hero{padding-left:22px;padding-right:22px}h1{font-size:clamp(38px,11vw,54px)}.visual{padding:16px;border-radius:15px}.chart-wrap{height:230px}.section-intro{padding-top:65px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">❋</span><span>TOPRAĞIN<br>HAFIZASI</span></a>
+  <nav class="navlinks" aria-label="Ana gezinme">
+    <a class="active" href="#top">Ana Sayfa</a><a href="#kesfet">Veri Analizi</a><a href="#bolum-3">Artışlar</a><a href="#bolum-4">Düşüşler</a><a href="#sonuc">Sonuç</a>
+  </nav>
+  <a class="nav-cta" href="#kesfet">Veriyi keşfet ↓</a>
+</header>
+<main id="top">
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Veri hikâyesi &nbsp;·&nbsp; Tarım</p>
+    <h1>Türkiye'nin tahıl verimi yükseldi. Peki, her yıl <span>aynı şekilde mi?</span></h1>
+    <div class="hero-rule"></div>
+    <p class="hero-description">1995–2024 dönemine ait verilerle Türkiye'de hektar başına tahıl veriminin uzun vadeli değişimini ve yıllık dalgalanmalarını keşfedin.</p>
+    <p class="byline">Hazırlayan: Oğuzhan Sapmaz</p>
+    <a class="scroll-cue" href="#kesfet"><span class="mouse" aria-hidden="true">↓</span><span>Hikâyeye başlamak için aşağı kaydır</span></a>
+  </div>
+</section>
+<section class="section-intro" id="kesfet">
+  <p class="eyebrow">1995 — 2024</p><h2>Otuz yılın içindeki değişimi okuyalım.</h2>
+  <p>Her bölümde yeni bir bulguya odaklanın. Sayfayı kaydırdıkça grafik, anlatılan noktaya göre değişir.</p>
+</section>
+<section class="scrolly" aria-label="Veri hikâyesi bölümleri">
+<div class="chapters">
+  <article class="story active" data-step="0"><span class="step-no">01 / GENEL TABLO</span><h2>Uzun vadeli değişim, tek bir yıldan daha fazlasını anlatır.</h2><p>Türkiye'de tahıl verimi 1995–2024 arasında nasıl bir değişim gösterdi? Uzun vadeli eğilim, yıllar arasındaki dalgalanmalar ve dönemin başlangıcıyla sonu arasındaki fark incelenecek. Böylece tek bir yılın değerine bakmak yerine bütün dönem hakkında değerlendirme yapabileceğiz.</p><div class="insight" id="overviewInsight">Veriler yükleniyor…</div></article>
+  <article class="story" data-step="1"><span class="step-no">02 / ZİRVE VE DİP</span><h2>En yüksek ve en düşük yıllar, dönemin iki ucunu gösterir.</h2><p>Serideki en yüksek ve en düşük tahıl verimi değerlerini belirleyeceğiz. Bu yılların birbirinden ne kadar ayrıldığını ve uç değerlerin genel eğilim içindeki yerini değerlendireceğiz. En yüksek değerin görülmesi, sonraki yıllarda da aynı seviyenin korunacağı anlamına gelmez.</p><div class="insight" id="extremesInsight">Değerler hesaplanıyor…</div></article>
+  <article class="story" id="bolum-3" data-step="2"><span class="step-no">03 / ARTIŞLAR</span><h2>Bazı yıllarda verim, önceki yıla göre daha hızlı yükseldi.</h2><p>Tahıl verimindeki artışları bir önceki yılın değerine göre yüzde olarak karşılaştıracağız. Böylece hangi yıllarda daha belirgin yükselişler yaşandığını görebileceğiz. Yüzde değişim, artışın önceki yılın verimine kıyasla büyüklüğünü gösterir; tek başına artışın nedenini açıklamaz.</p><div class="insight" id="increaseInsight">Yıllık değişimler hesaplanıyor…</div></article>
+  <article class="story" id="bolum-4" data-step="3"><span class="step-no">04 / DÜŞÜŞLER</span><h2>Uzun vadeli yükseliş, her yıl artış yaşandığı anlamına gelmez.</h2><p>Uzun vadeli yükseliş eğilimi, her yıl kesintisiz artış yaşandığı anlamına gelmez. Negatif yıllık değişimler, tahıl veriminin önceki yıla göre azaldığı dönemleri gösterecek. İklim, yağış, üretim yöntemleri ve ekili alan gibi etkenler olası açıklamalar olabilir; bunları doğrulamak için ek verilere ihtiyaç vardır.</p><div class="insight" id="decreaseInsight">Yıllık değişimler hesaplanıyor…</div></article>
+  <article class="story" data-step="4"><span class="step-no">05 / SEN KEŞFET</span><h2>Veriyi kendi seçtiğin yıllarda incele.</h2><p>Okuyucu, seçtiği bir yılın hektar başına tahıl verimini görüntüleyebilecek. Bu bölüm, grafiği yalnızca izlemek yerine verilerle doğrudan etkileşim kurmayı sağlayacak. Farklı yılları karşılaştırarak dönem içindeki değişim daha somut biçimde incelenebilecek.</p></article>
+  <article class="story" id="sonuc" data-step="5"><span class="step-no">06 / SONUÇ</span><h2>Trend kadar dalgalanmalar da önemlidir.</h2><p>Otuz yıllık veriler, tahıl veriminin zaman içindeki seyrini ve yıllık dalgalanmalarını birlikte değerlendirmemizi sağlayacak. Ancak hektar başına verim, toplam tahıl üretimiyle aynı gösterge değildir. Sonuçları yorumlarken veri setinin sınırlarını gözetmek ve neden-sonuç ilişkisi kurmak için ek araştırma yapmak gerekir</p><div class="insight">Sonuç: Veriyi zaman içindeki bağlamıyla değerlendirmek gerekir.</div></article>
+</div>
+<aside class="visual" aria-label="Kaydırma bölümüne göre değişen tahıl verimi grafiği">
+  <h3 id="chartTitle">Türkiye'de tahıl verimi</h3><p class="note" id="chartNote">Birim: kg/ha · Kaynak: Dünya Bankası</p>
+  <div class="chart-wrap"><canvas id="storyChart" role="img" aria-label="Yıllara göre tahıl verimi grafiği"></canvas></div><p id="chartStatus" aria-live="polite">Veri yükleniyor…</p>
+</aside>
+</section>
+<section class="explore">
+  <p class="eyebrow">Etkileşimli keşif</p><h2>Bir yılı kendin incele</h2><p>Bir yıl seç; o yılın tahıl verimini görüntüle.</p>
+  <div class="controls"><label for="yearSelect">Yıl seç:</label><select id="yearSelect" disabled><option>Veriler yükleniyor…</option></select><button id="showYear" disabled>Verimi göster</button></div>
+  <h3 id="yearResult" aria-live="polite">Veri bekleniyor…</h3>
+</section>
+</main>
+<footer>
+  <h2>Verinin sınırları</h2><p>Tahıl verimi hektar başına kilogram (kg/ha) olarak ölçülür. Verim değişimi toplam üretim miktarıyla aynı değildir. Yağış, sıcaklık, ürün bileşimi ve tarım uygulamaları gibi değişkenler ayrıca incelenmeden nedenler hakkında kesin sonuç çıkarılamaz.</p>
+  <p>Veri kaynağı: <a href="https://data.worldbank.org/indicator/AG.YLD.CREL.KG?locations=TR" target="_blank" rel="noopener noreferrer">Dünya Bankası — Cereal yield</a></p><p>Analiz ve tasarım: Oğuzhan Sapmaz</p><a class="backtop" href="#top">↑ Hikâyenin başına dön</a>
+</footer>
+<script>
+let rows=[],chart=null,activeStep=0;
+const fmt=n=>Number(n).toLocaleString("tr-TR",{minimumFractionDigits:1,maximumFractionDigits:1});
+const pct=n=>(n>0?"+":"")+Number(n).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2})+"%";
+const titles=["Türkiye'de tahıl verimi","Dönemin en düşük ve en yüksek verimi","Önceki yıla göre yıllık artışlar","Önceki yıla göre yıllık düşüşler","Yıllara göre tahıl verimi","1995–2024: Genel görünüm"];
+function fillInsights(){
+ const min=rows.reduce((a,b)=>a.value<b.value?a:b),max=rows.reduce((a,b)=>a.value>b.value?a:b),valid=rows.filter(r=>Number.isFinite(r.change));
+ const rise=valid.reduce((a,b)=>a.change>b.change?a:b),drop=valid.reduce((a,b)=>a.change<b.change?a:b);
+ document.getElementById("overviewInsight").textContent=`${rows[0].year} yılında ${fmt(rows[0].value)} kg/ha olan verim, ${rows.at(-1).year} yılında ${fmt(rows.at(-1).value)} kg/ha olarak kaydedildi.`;
+ document.getElementById("extremesInsight").textContent=`En düşük: ${min.year} · ${fmt(min.value)} kg/ha | En yüksek: ${max.year} · ${fmt(max.value)} kg/ha`;
+ document.getElementById("increaseInsight").textContent=`En büyük yıllık artış: ${rise.year} yılında ${pct(rise.change)}.`;
+ document.getElementById("decreaseInsight").textContent=`En büyük yıllık düşüş: ${drop.year} yılında ${pct(drop.change)}.`;
+}
+function drawChart(){
+ if(!rows.length||!window.Chart)return;
+ const labels=rows.map(r=>r.year),yields=rows.map(r=>r.value),changes=rows.map(r=>r.change),isChange=activeStep===2||activeStep===3,values=isChange?changes:yields;
+ const colors=rows.map(r=>activeStep===1?(r.value===Math.max(...yields)?"#d6f34e":r.value===Math.min(...yields)?"#ff8070":"#81926e"):activeStep===2?(r.change>=0?"#d6f34e":"#ff8070"):activeStep===3?(r.change<0?"#ff8070":"#81926e"):"#d6f34e");
+ if(chart)chart.destroy();
+ chart=new Chart(document.getElementById("storyChart"),{type:isChange?"bar":"line",data:{labels,datasets:[{label:isChange?"Yıllık değişim (%)":"Tahıl verimi (kg/ha)",data:values,borderColor:"#d6f34e",backgroundColor:isChange?colors:"rgba(214,243,78,.10)",pointBackgroundColor:colors,pointBorderColor:colors,pointRadius:activeStep===1?4:2.5,borderWidth:2.5,tension:.22,fill:!isChange,spanGaps:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{labels:{color:"#f0f1e8",usePointStyle:true,boxWidth:9}},tooltip:{callbacks:{label:c=>isChange?" "+pct(c.parsed.y):" "+fmt(c.parsed.y)+" kg/ha"}}},scales:{x:{ticks:{color:"#c0c8ba",maxTicksLimit:7,maxRotation:0},grid:{color:"rgba(220,238,187,.10)"}},y:{ticks:{color:"#c0c8ba"},grid:{color:"rgba(220,238,187,.12)"}}}}});
+ document.getElementById("chartTitle").textContent=titles[activeStep];document.getElementById("chartNote").textContent=isChange?"Birim: bir önceki yıla göre yüzde değişim":"Birim: kg/ha · Kaynak: Dünya Bankası";document.getElementById("chartStatus").textContent=`Hikâye adımı ${activeStep+1} / 6`;
+}
+function loadData(){
+ const status=document.getElementById("chartStatus");
+ if(!window.Papa){status.textContent="CSV okuyucu yüklenemedi. İnternet bağlantısını kontrol edin.";return}
+ Papa.parse("data/tahil_verimi_1995_2024.csv",{download:true,header:true,skipEmptyLines:true,complete:result=>{
+ rows=result.data.map(r=>({year:Number(r["Yıl"]),value:Number(r["Tahıl Verimi (kg/ha)"])})).filter(r=>Number.isFinite(r.year)&&Number.isFinite(r.value)).sort((a,b)=>a.year-b.year);
+ if(!rows.length){status.textContent="CSV bulundu ancak okunamadı. Dosya ve sütun adlarını kontrol edin.";return}
+ rows.forEach((r,i)=>r.change=i===0?null:(r.value/rows[i-1].value-1)*100);
+ const select=document.getElementById("yearSelect");select.innerHTML="";
+ rows.forEach(r=>{const o=document.createElement("option");o.value=r.year;o.textContent=r.year;select.appendChild(o)});
+ select.disabled=false;document.getElementById("showYear").disabled=false;document.getElementById("yearResult").textContent="Bir yıl seçerek başlayabilirsin.";
+ fillInsights();drawChart();
+ },error:()=>{status.textContent="CSV yüklenemedi. Dosyanın site/data klasöründe olduğunu kontrol edin."}});
+}
+document.getElementById("showYear").addEventListener("click",()=>{const y=Number(document.getElementById("yearSelect").value),r=rows.find(x=>x.year===y);if(r)document.getElementById("yearResult").textContent=`${r.year}: ${fmt(r.value)} kg/ha`});
+const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){document.querySelectorAll(".story").forEach(s=>s.classList.remove("active"));e.target.classList.add("active");activeStep=Number(e.target.dataset.step);drawChart()}}),{threshold:.55});
+document.querySelectorAll(".story").forEach(s=>observer.observe(s));loadData();
+</script>
+</body>
+</html>
